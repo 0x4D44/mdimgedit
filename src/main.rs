@@ -30,6 +30,7 @@ fn main() -> ExitCode {
 fn command_name(cmd: &Command) -> &'static str {
     match cmd {
         Command::Info { .. } => "info",
+        Command::Exif { .. } => "exif",
         Command::Crop { .. } => "crop",
         Command::Rotate { .. } => "rotate",
         Command::Flip { .. } => "flip",
@@ -117,6 +118,74 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 println!("{}", response.to_json());
             } else if !cli.quiet {
                 println!("{}", info.display());
+            }
+
+            Ok(exit_codes::SUCCESS)
+        }
+
+        Command::Exif {
+            verbose,
+            tag,
+            input,
+        } => {
+            let exif_data = ops::read_exif(input)?;
+
+            if let Some(ref tag_name) = tag {
+                // Specific tag requested
+                let field = exif_data
+                    .fields
+                    .iter()
+                    .find(|f| f.tag.to_lowercase() == tag_name.to_lowercase());
+
+                if format == OutputFormat::Json {
+                    let mut response = SuccessResponse::new("exif")
+                        .with_input(&input.display().to_string())
+                        .with_detail("tag", tag_name.clone());
+
+                    if let Some(f) = field {
+                        response = response
+                            .with_detail("value", f.value.clone())
+                            .with_detail("found", true);
+                    } else {
+                        response = response.with_detail("found", false);
+                    }
+                    println!("{}", response.to_json());
+                } else if !cli.quiet {
+                    if let Some(f) = field {
+                        println!("{}: {}", f.tag, f.value);
+                    } else {
+                        println!("Tag '{}' not found", tag_name);
+                    }
+                }
+            } else if format == OutputFormat::Json {
+                // Serialize ExifData directly for complete JSON output
+                let fields_json =
+                    serde_json::to_value(&exif_data.fields).unwrap_or(serde_json::Value::Null);
+                let response = SuccessResponse::new("exif")
+                    .with_input(&input.display().to_string())
+                    .with_detail("has_exif", exif_data.has_exif)
+                    .with_detail("field_count", exif_data.fields.len())
+                    .with_detail("camera_make", exif_data.camera_make.clone())
+                    .with_detail("camera_model", exif_data.camera_model.clone())
+                    .with_detail("date_time", exif_data.date_time.clone())
+                    .with_detail("exposure_time", exif_data.exposure_time.clone())
+                    .with_detail("f_number", exif_data.f_number.clone())
+                    .with_detail("iso", exif_data.iso.clone())
+                    .with_detail("focal_length", exif_data.focal_length.clone())
+                    .with_detail("gps_latitude", exif_data.gps_latitude.clone())
+                    .with_detail("gps_longitude", exif_data.gps_longitude.clone())
+                    .with_detail("orientation", exif_data.orientation)
+                    .with_detail("software", exif_data.software.clone())
+                    .with_detail("artist", exif_data.artist.clone())
+                    .with_detail("copyright", exif_data.copyright.clone())
+                    .with_detail("fields", fields_json);
+                println!("{}", response.to_json());
+            } else if !cli.quiet {
+                if *verbose {
+                    println!("{}", ops::exif::format_exif_verbose(&exif_data));
+                } else {
+                    println!("{}", ops::exif::format_exif_text(&exif_data));
+                }
             }
 
             Ok(exit_codes::SUCCESS)

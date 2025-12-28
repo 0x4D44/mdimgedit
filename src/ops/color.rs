@@ -61,7 +61,7 @@ fn convert_to_1bit(img: &DynamicImage, dither: bool) -> Result<DynamicImage> {
                 }
                 buffer[(y + 1) as usize][x as usize] += error * 5 / 16;
                 if x + 1 < width {
-                    buffer[(y + 1) as usize][(x + 1) as usize] += error * 1 / 16;
+                    buffer[(y + 1) as usize][(x + 1) as usize] += error / 16;
                 }
             }
 

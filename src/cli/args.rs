@@ -8,9 +8,22 @@ use std::path::PathBuf;
     version,
     about = "AI-focused command-line image editing tool",
     long_about = "A comprehensive image manipulation utility designed for programmatic use by AI systems and automation pipelines.\n\n\
-                  Supports common transformations (crop, rotate, resize), format conversion, \
+                  USAGE PATTERN:\n  \
+                    mdimgedit [OPTIONS] <COMMAND> [COMMAND-OPTIONS] <INPUT> [OUTPUT]\n\n\
+                  INPUT/OUTPUT FILES:\n  \
+                    - Most commands take: <INPUT> <OUTPUT> as the last two arguments\n  \
+                    - The 'info' command takes only: <INPUT> (no output file)\n  \
+                    - The 'composite' command takes: <BASE> <OVERLAY> <OUTPUT>\n\n\
+                  EXAMPLES:\n  \
+                    mdimgedit info photo.png\n  \
+                    mdimgedit resize --width 800 input.png output.png\n  \
+                    mdimgedit crop --width 100 --height 100 input.jpg cropped.jpg\n  \
+                    mdimgedit convert input.png output.webp\n  \
+                    mdimgedit --json brightness --value 20 in.png out.png\n\n\
+                  Supports transformations (crop, rotate, resize), format conversion, \
                   color adjustments, and compositing operations.\n\n\
-                  Use --json for machine-parseable output suitable for AI integration."
+                  Use --json for machine-parseable output suitable for AI integration.\n  \
+                  Use '<COMMAND> --help' for detailed help on each command."
 )]
 pub struct Cli {
     #[command(subcommand)]
@@ -39,6 +52,30 @@ pub enum Command {
                         mdimgedit info image.png\n  \
                         mdimgedit info --json image.png")]
     Info {
+        /// Input image file
+        #[arg(value_name = "INPUT")]
+        input: PathBuf,
+    },
+
+    /// Display EXIF metadata from image
+    #[command(long_about = "Read and display EXIF metadata from an image file.\n\n\
+                      Shows camera information, shooting parameters, date/time, GPS coordinates,\n\
+                      and other embedded metadata. Supports JPEG, TIFF, and some RAW formats.\n\n\
+                      Use --verbose to show all EXIF fields.\n\
+                      Use --tag to retrieve a specific field.\n\
+                      Use --json for machine-parseable output.\n\n\
+                      Examples:\n  \
+                        mdimgedit exif photo.jpg\n  \
+                        mdimgedit exif --verbose photo.jpg\n  \
+                        mdimgedit exif --tag Make photo.jpg\n  \
+                        mdimgedit exif --json photo.jpg")]
+    Exif {
+        /// Show all EXIF fields (verbose output)
+        #[arg(short, long)]
+        verbose: bool,
+        /// Retrieve only this specific tag
+        #[arg(long)]
+        tag: Option<String>,
         /// Input image file
         #[arg(value_name = "INPUT")]
         input: PathBuf,
