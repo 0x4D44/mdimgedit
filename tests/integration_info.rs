@@ -148,5 +148,5 @@ fn test_version_output() {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("mdimgedit"));
-    assert!(stdout.contains("0.1.0"));
+    assert!(stdout.contains("1.0.0"));
 }

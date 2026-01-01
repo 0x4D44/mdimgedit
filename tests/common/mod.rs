@@ -13,6 +13,7 @@ pub fn create_test_rgba_image(width: u32, height: u32) -> RgbaImage {
 }
 
 /// Create a test RGB image (no alpha)
+#[allow(dead_code)]
 pub fn create_test_rgb_image(width: u32, height: u32) -> image::RgbImage {
     image::ImageBuffer::from_fn(width, height, |x, y| {
         let r = (x * 255 / width.max(1)) as u8;
@@ -23,6 +24,7 @@ pub fn create_test_rgb_image(width: u32, height: u32) -> image::RgbImage {
 }
 
 /// Create a test grayscale image
+#[allow(dead_code)]
 pub fn create_test_gray_image(width: u32, height: u32) -> image::GrayImage {
     image::ImageBuffer::from_fn(width, height, |x, y| {
         let val = ((x + y) * 255 / (width + height).max(1)) as u8;
@@ -31,6 +33,7 @@ pub fn create_test_gray_image(width: u32, height: u32) -> image::GrayImage {
 }
 
 /// Save a test image and return the path
+#[allow(dead_code)]
 pub fn save_test_image<P: AsRef<Path>>(img: &RgbaImage, path: P) -> Result<(), image::ImageError> {
     img.save(path)
 }

@@ -306,6 +306,51 @@ mod tests {
     }
 
     #[test]
+    fn test_canvas_anchor_remaining_variants() {
+        let img = create_test_image(10, 10, Rgba([255, 0, 0, 255]));
+        // Just verify they run without error and produce correct dimensions
+        let anchors = [
+            Anchor::TopCenter,
+            Anchor::TopRight,
+            Anchor::CenterLeft,
+            Anchor::CenterRight,
+            Anchor::BottomLeft,
+            Anchor::BottomCenter,
+        ];
+
+        for anchor in anchors {
+            let result = canvas_resize(&img, 20, 20, anchor, Rgba([0, 0, 0, 255])).unwrap();
+            assert_eq!(result.width(), 20);
+            assert_eq!(result.height(), 20);
+        }
+    }
+
+    #[test]
+    fn test_blend_mode_overlay() {
+        // Overlay logic:
+        // if base < 0.5: 2 * base * overlay
+        // if base >= 0.5: 1 - 2 * (1 - base) * (1 - overlay)
+
+        // Case 1: Base < 0.5
+        let base = create_test_image(1, 1, Rgba([64, 64, 64, 255])); // ~0.25
+        let overlay = create_test_image(1, 1, Rgba([128, 128, 128, 255])); // ~0.5
+
+        let result = composite(&base, &overlay, 0, 0, None, 1.0, BlendMode::Overlay).unwrap();
+        let pixel = result.to_rgba8().get_pixel(0, 0)[0];
+        // 2 * 0.25 * 0.5 = 0.25 -> 64
+        assert!((pixel as i32 - 64).abs() < 2);
+
+        // Case 2: Base >= 0.5
+        let base = create_test_image(1, 1, Rgba([192, 192, 192, 255])); // ~0.75
+        let overlay = create_test_image(1, 1, Rgba([128, 128, 128, 255])); // ~0.5
+
+        let result = composite(&base, &overlay, 0, 0, None, 1.0, BlendMode::Overlay).unwrap();
+        let pixel = result.to_rgba8().get_pixel(0, 0)[0];
+        // 1 - 2 * (0.25) * (0.5) = 1 - 0.25 = 0.75 -> 192
+        assert!((pixel as i32 - 192).abs() < 2);
+    }
+
+    #[test]
     fn test_canvas_zero_dimension() {
         let img = create_test_image(10, 10, Rgba([255, 0, 0, 255]));
         let result = canvas_resize(&img, 0, 10, Anchor::Center, Rgba([0, 0, 0, 255]));

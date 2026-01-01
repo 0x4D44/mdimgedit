@@ -595,6 +595,14 @@ mod tests {
             image::imageops::FilterType::Nearest
         ));
         assert!(matches!(
+            ResizeFilter::Linear.to_image_filter(),
+            image::imageops::FilterType::Triangle
+        ));
+        assert!(matches!(
+            ResizeFilter::Cubic.to_image_filter(),
+            image::imageops::FilterType::CatmullRom
+        ));
+        assert!(matches!(
             ResizeFilter::Lanczos.to_image_filter(),
             image::imageops::FilterType::Lanczos3
         ));

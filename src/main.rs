@@ -70,8 +70,7 @@ fn save_and_respond(
     quiet: bool,
     cmd_name: &str,
     input_path: &str,
-    orig_width: u32,
-    orig_height: u32,
+    orig_dim: (u32, u32),
 ) -> mdimgedit::Result<i32> {
     img.save(output).map_err(|e| ImgEditError::WriteError {
         path: output.display().to_string(),
@@ -82,8 +81,8 @@ fn save_and_respond(
         let response = SuccessResponse::new(cmd_name)
             .with_input(input_path)
             .with_output(&output.display().to_string())
-            .with_detail("original_width", orig_width)
-            .with_detail("original_height", orig_height)
+            .with_detail("original_width", orig_dim.0)
+            .with_detail("original_height", orig_dim.1)
             .with_detail("result_width", img.width())
             .with_detail("result_height", img.height());
         println!("{}", response.to_json());
@@ -91,8 +90,8 @@ fn save_and_respond(
         println!(
             "Saved {} ({}x{} -> {}x{})",
             output.display(),
-            orig_width,
-            orig_height,
+            orig_dim.0,
+            orig_dim.1,
             img.width(),
             img.height()
         );
@@ -214,8 +213,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "crop",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -241,8 +239,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "rotate",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -266,8 +263,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "flip",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -293,8 +289,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "resize",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -320,8 +315,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "fit",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -380,8 +374,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "grayscale",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -405,8 +398,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "depth",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -429,8 +421,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "invert",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -453,8 +444,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "brightness",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -477,8 +467,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "contrast",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -501,8 +490,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "gamma",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -525,8 +513,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "blur",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -550,8 +537,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "sharpen",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -594,8 +580,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "pad",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -622,8 +607,7 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "canvas",
                 &input.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
 
@@ -660,9 +644,197 @@ fn run_command(cli: &Cli, format: OutputFormat) -> mdimgedit::Result<i32> {
                 cli.quiet,
                 "composite",
                 &base.display().to_string(),
-                orig_width,
-                orig_height,
+                (orig_width, orig_height),
             )
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mdimgedit::cli::args::{Anchor, BlendMode, ImageFormat, ResizeFilter};
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_command_name() {
+        let p = PathBuf::from("test.png");
+
+        assert_eq!(command_name(&Command::Info { input: p.clone() }), "info");
+        assert_eq!(
+            command_name(&Command::Exif {
+                verbose: false,
+                tag: None,
+                input: p.clone()
+            }),
+            "exif"
+        );
+        assert_eq!(
+            command_name(&Command::Crop {
+                x: 0,
+                y: 0,
+                width: 10,
+                height: 10,
+                anchor: Anchor::TopLeft,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "crop"
+        );
+        assert_eq!(
+            command_name(&Command::Rotate {
+                degrees: 90.0,
+                expand: false,
+                background: "transparent".to_string(),
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "rotate"
+        );
+        assert_eq!(
+            command_name(&Command::Flip {
+                horizontal: true,
+                vertical: false,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "flip"
+        );
+        assert_eq!(
+            command_name(&Command::Resize {
+                width: Some(10),
+                height: None,
+                scale: None,
+                filter: ResizeFilter::Lanczos,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "resize"
+        );
+        assert_eq!(
+            command_name(&Command::Fit {
+                max_width: Some(10),
+                max_height: None,
+                upscale: false,
+                filter: ResizeFilter::Lanczos,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "fit"
+        );
+        assert_eq!(
+            command_name(&Command::Convert {
+                format: Some(ImageFormat::Png),
+                quality: 90,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "convert"
+        );
+        assert_eq!(
+            command_name(&Command::Grayscale {
+                no_preserve_alpha: false,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "grayscale"
+        );
+        assert_eq!(
+            command_name(&Command::Depth {
+                bits: 8,
+                dither: false,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "depth"
+        );
+        assert_eq!(
+            command_name(&Command::Invert {
+                invert_alpha: false,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "invert"
+        );
+        assert_eq!(
+            command_name(&Command::Brightness {
+                value: 10,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "brightness"
+        );
+        assert_eq!(
+            command_name(&Command::Contrast {
+                value: 1.0,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "contrast"
+        );
+        assert_eq!(
+            command_name(&Command::Gamma {
+                value: 1.0,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "gamma"
+        );
+        assert_eq!(
+            command_name(&Command::Blur {
+                radius: 1.0,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "blur"
+        );
+        assert_eq!(
+            command_name(&Command::Sharpen {
+                amount: 1.0,
+                radius: 1.0,
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "sharpen"
+        );
+        assert_eq!(
+            command_name(&Command::Pad {
+                all: Some(10),
+                top: None,
+                bottom: None,
+                left: None,
+                right: None,
+                horizontal: None,
+                vertical: None,
+                color: "transparent".to_string(),
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "pad"
+        );
+        assert_eq!(
+            command_name(&Command::Canvas {
+                width: 100,
+                height: 100,
+                anchor: Anchor::Center,
+                color: "transparent".to_string(),
+                input: p.clone(),
+                output: p.clone()
+            }),
+            "canvas"
+        );
+        assert_eq!(
+            command_name(&Command::Composite {
+                x: None,
+                y: None,
+                anchor: None,
+                opacity: 1.0,
+                blend: BlendMode::Normal,
+                base: p.clone(),
+                overlay: p.clone(),
+                output: p.clone()
+            }),
+            "composite"
+        );
     }
 }

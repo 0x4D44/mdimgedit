@@ -330,4 +330,52 @@ mod tests {
         let result = read_exif("nonexistent_file.jpg");
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_format_all_fields() {
+        let data = ExifData {
+            has_exif: true,
+            camera_make: Some("TestMake".to_string()),
+            camera_model: Some("TestModel".to_string()),
+            date_time: Some("2023:01:01 12:00:00".to_string()),
+            exposure_time: Some("1/100".to_string()),
+            f_number: Some("f/2.8".to_string()),
+            iso: Some("100".to_string()),
+            focal_length: Some("50mm".to_string()),
+            gps_latitude: None,
+            gps_longitude: None,
+            image_width: Some(1920),
+            image_height: Some(1080),
+            orientation: Some(1),
+            software: Some("TestSoft".to_string()),
+            artist: None,
+            copyright: None,
+            fields: vec![],
+        };
+
+        let text = format_exif_text(&data);
+        assert!(text.contains("TestMake"));
+        assert!(text.contains("TestModel"));
+        assert!(text.contains("2023:01:01"));
+        assert!(text.contains("1/100"));
+        assert!(text.contains("f/2.8"));
+        assert!(text.contains("100"));
+        assert!(text.contains("50mm"));
+        assert!(text.contains("TestSoft"));
+    }
+
+    #[test]
+    fn test_format_gps() {
+        let data = ExifData {
+            has_exif: true,
+            gps_latitude: Some("51.5074".to_string()),
+            gps_longitude: Some("-0.1278".to_string()),
+            ..Default::default()
+        };
+
+        let text = format_exif_text(&data);
+        assert!(text.contains("GPS Information:"));
+        assert!(text.contains("Latitude: 51.5074"));
+        assert!(text.contains("Longitude: -0.1278"));
+    }
 }

@@ -125,4 +125,34 @@ mod tests {
             assert!(err.exit_code() >= 0 && err.exit_code() <= 5);
         }
     }
+
+    #[test]
+    fn test_wrapped_error_codes() {
+        use std::io;
+
+        // Test IoError
+        let io_err = io::Error::new(io::ErrorKind::NotFound, "not found");
+        let err = ImgEditError::IoError(io_err);
+        assert_eq!(err.code(), "IO_ERROR");
+        assert_eq!(err.exit_code(), exit_codes::GENERAL_ERROR);
+
+        // Test ImageError
+        let img_err = image::ImageError::Decoding(image::error::DecodingError::from_format_hint(
+            image::error::ImageFormatHint::Unknown,
+        ));
+        let err = ImgEditError::ImageError(img_err);
+        assert_eq!(err.code(), "IMAGE_ERROR");
+        assert_eq!(err.exit_code(), exit_codes::GENERAL_ERROR);
+    }
+
+    #[test]
+    fn test_missing_option_error() {
+        let err = ImgEditError::MissingOption("foo".to_string());
+        assert_eq!(err.code(), "MISSING_OPTION");
+        assert_eq!(err.exit_code(), exit_codes::INVALID_PARAMETERS);
+        assert_eq!(
+            err.to_string(),
+            "Operation requires at least one option: foo"
+        );
+    }
 }
